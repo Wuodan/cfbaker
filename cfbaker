@@ -1,0 +1,114 @@
+#!/bin/sh
+#
+# copy manually edited config files
+#
+# Copyright (c) 2010 Stefan Kuhn <stefan.kuhn@hispeed.ch>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+
+# defaults for functions
+APPNAME=$(basename $0) # current script name
+WHOAMI=`whoami`
+[ "$WHOAMI" = root ] && PATH=/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin
+
+# Functions
+display_usage() {
+	cat << '	EOF'
+	Usage: $APPNAME [-ah]
+	EOF
+}
+
+display_help() {
+	display_usage
+	cat << '	EOF'
+
+	Options:
+
+	-h  Display this help
+	-a  Display the authors of this script
+
+	EOF
+}
+
+display_authors() {
+	cat << '	EOF'
+
+	$APPNAME was brought to you by:
+
+	Stefan Kuhn:	Private Project
+	$WHOAMI:		Innocent bystander.
+
+	EOF
+}
+
+# Get options.
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-h)
+			display_help ; exit 0 ;;
+		-a)
+			display_authors ; exit 0 ;;
+		--*)
+			echo "$APPNAME doesn't recognize -- gnu-longopts."
+			echo 'Use $APPNAME -h for a long help message.'
+			display_usage
+			exit 1 ;;
+		-u)
+			shift
+			echo 'Setting user ...'
+			if [ $# -eq 0 ]; then
+				echo 'Missing user!'
+			else USER="$1"
+				shift
+			fi;;
+		-n)
+			shift
+			echo 'Setting name ...'
+			if [ $# -eq 0 ]; then
+				echo 'Missing name!'
+			else
+				NAME="$1"
+				shift
+			fi;;
+		-[a-zA-Z][a-zA-Z]*)
+			# split concatenated single-letter options apart
+			FIRST="$1"; shift
+			set -- `echo "$FIRST" | sed 's/^-\(.\)\(.*\)/-\1 -\2/'` "$@"
+			;;
+		-*)
+			echo 1>&2 "$APPNAME: unrecognized option "\`"$1'"
+			display_usage
+			exit 1
+			;;
+		*)
+			break
+			;;
+	esac
+done
+
+
+# defaults
+: ${USER:="$USER"}
+echo $USER
+echo $USER
+echo $USER
+
+echo $USER
+
+echo ... end of action, may the moon shine upon you!
