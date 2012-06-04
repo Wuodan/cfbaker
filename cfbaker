@@ -28,14 +28,14 @@ WHOAMI=`whoami`
 [ "$WHOAMI" = root ] && PATH=/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin
 
 # Functions
-display_usage() {
+displayUsage() {
 	cat << '	EOF'
 	Usage: $APPNAME [-ah]
 	EOF
 }
 
-display_help() {
-	display_usage
+displayHelp() {
+	displayUsage
 	cat << '	EOF'
 
 	Options:
@@ -46,7 +46,7 @@ display_help() {
 	EOF
 }
 
-display_authors() {
+displayAuthors() {
 	cat << '	EOF'
 
 	$APPNAME was brought to you by:
@@ -61,13 +61,13 @@ display_authors() {
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-h)
-			display_help ; exit 0 ;;
+			displayHelp ; exit 0 ;;
 		-a)
-			display_authors ; exit 0 ;;
+			displayAuthors ; exit 0 ;;
 		--*)
 			echo "$APPNAME doesn't recognize -- gnu-longopts."
 			echo 'Use $APPNAME -h for a long help message.'
-			display_usage
+			displayUsage
 			exit 1 ;;
 		-u)
 			shift
@@ -93,7 +93,7 @@ while [ $# -gt 0 ]; do
 			;;
 		-*)
 			echo 1>&2 "$APPNAME: unrecognized option "\`"$1'"
-			display_usage
+			displayUsage
 			exit 1
 			;;
 		*)
@@ -105,10 +105,68 @@ done
 
 # defaults
 : ${USER:="$USER"}
-echo $USER
-echo $USER
-echo $USER
+# app home dir
+CFDHOME=$HOME/.$APPNAME
+# all data goes in here
+# git home (possible symlink, this contains actual data)
+CFDGIT="$CFDHOME/git"
+# dir with sym-links to actual files (a local git repo)
+CFDPRIVATE="$CFDGIT/private"
+# dir with copy of public data (a local git repo), possible 
+CFDPUBLIC="$CFDGIT/public"
 
-echo $USER
+
+# init directories
+# just create these
+for folder in $CFDHOME; do
+	if [ ! -d "$folder" ]; then
+		mkdir -p "$folder"
+	fi
+done
+# ask for different location
+for folder in $CFDGIT $CFDPRIVATE $CFDPUBLIC; do
+	if [ ! -d "$folder" ]; then
+		echo "This folder can contain actual data.\nDefault storage is within user profile. A link will be created if you chose another location."
+		echo "Enter a new location or confirm with blank ($folder):"
+		read location
+		if [ "$location" == "" ]; then
+			location="$folder"
+		fi
+		# create the folder
+		mkdir -p "$location"
+		# create link if non-default
+		if [ "$location" != "$folder" ]; then
+			ln -s "$location" "$folder"
+		fi
+		# flag to create new private repo
+		if [ "$folder" == "$CFDPRIVATE" ]; then
+			GITCREATEPRIVATE=1
+		fi
+		if [ "$folder" == "$CFDPUBLIC" ]; then
+			GITCREATEPUBLIC=1
+		fi
+	fi
+done
+
+# create git repos
+# private repo
+if [ "$GITCREATEPRIVATE" != "" ]; then
+	# create links to config files/folders
+	# user config
+	# list of files in user home beginning with "."
+	objectList=`ls -a "$HOME" | grep '^\.' | grep -v '^\.*$'`
+	echo $objectList
+	echo ...
+	for object in $objectList; do
+		object="$HOME/$object"
+		echo $object
+		link="$CFDPRIVATE/$object"
+		echo $link
+		# create links if they do not exist
+		if [ ! -h "$link" ], then
+		if	
+		fi
+	done
+fi
 
 echo ... end of action, may the moon shine upon you!
