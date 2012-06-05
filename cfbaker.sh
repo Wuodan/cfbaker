@@ -104,11 +104,12 @@ done
 
 
 # defaults
-: ${USER:="$USER"}
+
+# templates dir
+CFDTEMPLATES="$(dirname $0)/templates"
+
 # app home dir
 CFDHOME=$HOME/.$APPNAME
-# folder with symlinks to actual data
-CFDRAW="$CFDHOME/raw"
 # all data goes in here
 # git home (possible symlink, this contains actual data)
 CFDGIT="$CFDHOME/git"
@@ -116,11 +117,13 @@ CFDGIT="$CFDHOME/git"
 CFDPRIVATE="$CFDGIT/private"
 # dir with copy of public data (a local git repo), possible 
 CFDPUBLIC="$CFDGIT/public"
+# all config goes in here
+CFDCONFIG="$CFDPRIVATE/config"
 
 
 # init directories and git repos
 # just create these
-for folder in $CFDHOME $CFDRAW; do
+for folder in $CFDHOME; do
 	if [ ! -d "$folder" ]; then
 		mkdir -p "$folder"
 	fi
@@ -147,13 +150,27 @@ for folder in $CFDGIT $CFDPRIVATE $CFDPUBLIC; do
 		fi
 	fi
 done
+# just create these
+for folder in $CFDCONFIG; do
+	if [ ! -d "$folder" ]; then
+		mkdir -p "$folder"
+	fi
+done
 
-# init raw data repo
-# search for git folder
-if [ ! -d "$CFDRAW/.git" ]; then
-	git clone "$CFDPRIVATE" "$CFDRAW"
-	echo "git cloned into raw data folder: $CFDRAW"
+# init config files
+if [ ! -f "$CFDCONFIG/user.private" ]; then
+	cp "$CFDTEMPLATES/config.template" "$CFDCONFIG/user.private"
+	cat << '	EOF'
+	ls -a "$HOME" | grep '^\.' | grep -v '^\.*$' | grep -v "\.$APPNAME" >"$CFDCONFIG/user.private"
 fi
+
+
+# init private data repo
+# search for git folder
+# if [ ! -d "$CFDPRIVATE/.git" ]; then
+# 	git clone "$CFDPRIVATE" "$CFDPRIVATE"
+# 	echo "git cloned into raw data folder: $CFDRAW"
+# fi
 
 # create links to config files/folders
 
@@ -165,18 +182,20 @@ objectList=`ls -a "$HOME" | grep '^\.' | grep -v '^\.*$' | grep -v "\.$APPNAME"`
 echo $objectList
 for object in $objectList; do
 	object="$HOME"/"$object"
-	link="$CFDRAW"/default"$object"
+	link="$CFDPRIVATE"/plain"$object"
 	# create links if they do not exist
 	if [ ! -h "$link" ]; then
 		mkdir -p $(dirname $link)
 		ln -s "$object" "$link"
-		echo "Created local link to: $object"
+		# echo "Created local link: $object --> $link"
 	fi
 done
 
-# update raw git
-# git --git-dir "$CFDRAW/.git" add -A
+# update private git
+# echo "Adding content to git ($CFDPRIVATE/.git)"
+# git --git-dir "$CFDPRIVATE/.git" add -A
 # commit into private repo
-# git commit -m message
+# echo "Commiting private git repo"
+# git --git-dir "$CFDPRIVATE/.git" commit -m message
 
 echo ... end of action, may the moon shine upon you!
