@@ -26,6 +26,8 @@
 APPNAME=$(basename $0) # current script name
 WHOAMI=`whoami`
 [ "$WHOAMI" = root ] && PATH=/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin
+# app home dir
+CFDHOME=$HOME/.$APPNAME
 
 # Functions
 displayUsage() {
@@ -55,6 +57,11 @@ displayAuthors() {
 	$WHOAMI:		Innocent bystander.
 
 	EOF
+}
+
+# used for development, clean user home dir
+deleteAll(){
+	
 }
 
 # Get options.
@@ -108,8 +115,6 @@ done
 # templates dir
 CFDTEMPLATES="$(dirname $0)/templates"
 
-# app home dir
-CFDHOME=$HOME/.$APPNAME
 # all data goes in here
 # git home (possible symlink, this contains actual data)
 CFDGIT="$CFDHOME/git"
@@ -141,6 +146,7 @@ for folder in $CFDGIT $CFDPRIVATE $CFDPUBLIC; do
 		mkdir -p "$location"
 		# create link if non-default
 		if [ "$location" != "$folder" ]; then
+			# check if it is a folder
 			ln -s "$location" "$folder"
 		fi
 		# create new private repo
@@ -160,7 +166,6 @@ done
 # init config files
 if [ ! -f "$CFDCONFIG/user.private" ]; then
 	cp "$CFDTEMPLATES/config.template" "$CFDCONFIG/user.private"
-	cat << '	EOF'
 	ls -a "$HOME" | grep '^\.' | grep -v '^\.*$' | grep -v "\.$APPNAME" >"$CFDCONFIG/user.private"
 fi
 
